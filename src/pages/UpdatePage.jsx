@@ -5,7 +5,7 @@ import PostForm from "../components/PostForm";
 const URL = import.meta.env.VITE_SUPABASE_URL;
 const headers = {
   apikey: import.meta.env.VITE_SUPABASE_APIKEY,
-  "Content-Type": "application/json"
+  "Content-Type": "application/json",
 };
 
 export default function UpdatePage() {
@@ -18,31 +18,21 @@ export default function UpdatePage() {
 
   useEffect(() => {
     async function loadPost() {
-      // TODO:
-      // 1. Hent ét post via id
-      // 2. Brug querystring: ?id=eq.${id}
-      // 3. Gem første element i post state
-      //
-      // Ekstra bagefter:
-      // - loading
-      // - try/catch
-      // - fejlbesked
-      console.log(id, URL, headers);
+      const response = await fetch(`${URL}?id=eq.${id}`, { headers });
+      const data = await response.json();
+      setPost(data[0]);
     }
 
     loadPost();
   }, [id]);
 
   async function handleSubmit(postData) {
-    // TODO:
-    // 1. Send PATCH request til post med id
-    // 2. Navigér tilbage til detail-siden ved succes
-    //
-    // Ekstra bagefter:
-    // - isSubmitting
-    // - try/catch
-    // - fejlbesked
-    console.log(postData, id);
+    await fetch(`${URL}?id=eq.${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(postData),
+    });
+
     navigate(`/posts/${id}`);
   }
 
