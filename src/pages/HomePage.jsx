@@ -9,15 +9,30 @@ const headers = {
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function loadPosts() {
-      const response = await fetch(URL, { headers });
-      const data = await response.json();
-      setPosts(data);
-      console.log(URL, headers);
+      setIsLoading(true);
+      setErrorMessage("");
+
+      try {
+        const response = await fetch(URL, { headers });
+
+        if (!response.ok) {
+          throw new Error("Could not load posts.");
+        }
+
+        const data = await response.json();
+        setPosts(data);
+      } catch (error) {
+        setErrorMessage(
+          error.message || "Something went wrong while loading posts.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     loadPosts();
@@ -36,7 +51,7 @@ export default function HomePage() {
       {!isLoading && !errorMessage && posts.length === 0 && (
         <section className="empty-state">
           <h2>No posts yet</h2>
-          <p>Hent posts fra Supabase med GET og vis dem her.</p>
+          <p>Create your first post to get started.</p>
         </section>
       )}
       {!isLoading && !errorMessage && posts.length > 0 && (

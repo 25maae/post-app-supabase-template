@@ -14,13 +14,28 @@ export default function CreatePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(postData) {
-    await fetch(URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(postData),
-    });
+    setIsSubmitting(true);
+    setErrorMessage("");
 
-    navigate("/");
+    try {
+      const response = await fetch(URL, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not create post.");
+      }
+
+      navigate("/");
+    } catch (error) {
+      setErrorMessage(
+        error.message || "Something went wrong while creating the post.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (

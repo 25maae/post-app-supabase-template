@@ -12,28 +12,64 @@ export default function UpdatePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function loadPost() {
-      const response = await fetch(`${URL}?id=eq.${id}`, { headers });
-      const data = await response.json();
-      setPost(data[0]);
+      setIsLoading(true);
+      setErrorMessage("");
+
+      try {
+        const response = await fetch(`${URL}?id=eq.${id}`, { headers });
+
+        if (!response.ok) {
+          throw new Error("Could not load post.");
+        }
+
+        const data = await response.json();
+
+        if (!data[0]) {
+          throw new Error("Post not found.");
+        }
+
+        setPost(data[0]);
+      } catch (error) {
+        setErrorMessage(
+          error.message || "Something went wrong while loading the post.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     loadPost();
   }, [id]);
 
   async function handleSubmit(postData) {
-    await fetch(`${URL}?id=eq.${id}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify(postData),
-    });
+    setIsSubmitting(true);
+    setErrorMessage("");
 
-    navigate(`/posts/${id}`);
+    try {
+      const response = await fetch(`${URL}?id=eq.${id}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not update post.");
+      }
+
+      navigate(`/posts/${id}`);
+    } catch (error) {
+      setErrorMessage(
+        error.message || "Something went wrong while updating the post.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (isLoading) return <p className="status-msg">Loading post...</p>;
@@ -46,7 +82,7 @@ export default function UpdatePage() {
       ) : (
         <PostForm
           onSubmit={handleSubmit}
-          postToUpdate={post || { image: "", caption: "" }}
+          postToUpdate={post}
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
         />
